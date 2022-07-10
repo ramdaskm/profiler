@@ -6,14 +6,14 @@ import requests
 import re
 import time
 
-from core import logging_utils
+from core.logging_utils import LoggingUtils
 #import requests.packages.urllib3
 
 global pprint_j
 loggr=None
 
 if loggr == None:
-    loggr = logging_utils.get_logger(__name__)
+    loggr = LoggingUtils.get_logger()
 
 requests.packages.urllib3.disable_warnings()
 
@@ -31,9 +31,11 @@ class dbclient:
     http_error_codes = [401]
 
     def __init__(self, configs):
+        self._configs=configs
         self._profile = configs['profile']
         self._raw_url = configs['url']
         self._url=self._raw_url
+        self._account_id = configs['account_id']
         self._export_db = configs['export_db']
         self._is_azure = configs['is_azure']
         self._verify_ssl = configs['verify_ssl']
@@ -57,22 +59,22 @@ class dbclient:
 
     def _update_token_master(self):
         import base64
-        def get_secret_value(scope_name, secret_key, cid):
-            ec_id = self.get_execution_context(cid)
+        def get_secret_value(scope_name, secret_key):
+            ec_id = self.get_execution_context()
             cmd_set_value = f"value = dbutils.secrets.get(scope = '{scope_name}', key = '{secret_key}')"
             cmd_convert_b64 = "import base64; b64_value = base64.b64encode(value.encode('ascii'))"
             cmd_get_b64 = "print(str(b64_value.decode('ascii')))"   # b64_value.decode('ascii')
-            results_set = self.submit_command(cid, ec_id, cmd_set_value)
-            results_convert = self.submit_command(cid, ec_id, cmd_convert_b64)
-            results_get = self.submit_command(cid, ec_id, cmd_get_b64)
+            results_set = self.submit_command(ec_id, cmd_set_value)
+            results_convert = self.submit_command(ec_id, cmd_convert_b64)
+            results_get = self.submit_command(ec_id, cmd_get_b64)
             val = results_get.get('data')
             b64_value_decode = base64.b64decode(val).decode('ascii')
             return b64_value_decode
 
         if(self._master_name==''): #do it first time
             #secretsClient=SecretsClient(self)
-            self._master_name = get_secret_value(self._master_name_scope, self._master_name_key, self._cluster_id )
-            self._master_password = get_secret_value(self._master_password_scope, self._master_password_key, self._cluster_id)    
+            self._master_name = get_secret_value(self._master_name_scope, self._master_name_key)
+            self._master_password = get_secret_value(self._master_password_scope, self._master_password_key)    
         userAndPass = base64.b64encode(f"{self._master_name}:{self._master_password}".encode("ascii")).decode("ascii")
         self._url = "https://accounts.cloud.databricks.com" #url for accounts api
         self._token = {
@@ -136,7 +138,7 @@ class dbclient:
             if http_status_code in dbclient.http_error_codes:
                 raise Exception("Error: GET request failed with code {}\n{}".format(http_status_code, raw_results.text))
             results = raw_results.json()
-            if logging_utils.check_error(results):
+            if LoggingUtils.check_error(results):
                 loggr.warn(json.dumps(results) + '\n')
             loggr.debug(json.dumps(results, indent=4, sort_keys=True))
             if type(results) == list:
@@ -181,7 +183,7 @@ class dbclient:
                                                                                       http_status_code,
                                                                                       raw_results.text))
             results = raw_results.json()
-            if logging_utils.check_error(results):
+            if LoggingUtils.check_error(results):
                 loggr.warn(json.dumps(results) + '\n')
 
             loggr.debug(json.dumps(results, indent=4, sort_keys=True))
@@ -219,9 +221,11 @@ class dbclient:
             self._url=self._raw_url                   
         return self.http_req('patch', endpoint, json_params, version)
 
-    def get_execution_context(self, cid):
+    def get_execution_context(self):
         self._update_token()
         loggr.debug("Creating remote Spark Session")
+
+        cid=self._cluster_id
         #time.sleep(5)
         ec_payload = {"language": "python",
                     "clusterId": cid}
@@ -235,8 +239,9 @@ class dbclient:
         return ec_id
 
 
-    def submit_command(self, cid, ec_id, cmd):
+    def submit_command(self, ec_id, cmd):
         self._update_token()
+        cid=self._cluster_id
         # This launches spark commands and print the results. We can pull out the text results from the API
         command_payload = {'language': 'python',
                         'contextId': ec_id,

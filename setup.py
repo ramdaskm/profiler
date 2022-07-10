@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="dbr-profiler-tool",
-    version="0.1.8",
+    version="0.2.6",
     author="RKMurali",
     author_email="ramdas.murali@databricks.com",
     description="Databricks Profiling Tool",

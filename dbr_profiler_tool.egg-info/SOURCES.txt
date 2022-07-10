@@ -7,8 +7,10 @@ clientpkgs/ClustersClient.py
 clientpkgs/DBSqlClient.py
 clientpkgs/DbfsClient.py
 clientpkgs/IPAccessClient.py
+clientpkgs/InitScriptsClient.py
 clientpkgs/JobRunsClient.py
 clientpkgs/JobsClient.py
+clientpkgs/LibrariesClient.py
 clientpkgs/MLFlowClient.py
 clientpkgs/PoliciesClient.py
 clientpkgs/PoolsClient.py
@@ -17,6 +19,8 @@ clientpkgs/ScimClient.py
 clientpkgs/SecretsClient.py
 clientpkgs/TableACLsClient.py
 clientpkgs/TokensClient.py
+clientpkgs/WSSettingsClient.py
+clientpkgs/WorkspaceClient.py
 clientpkgs/__init__.py
 core/__init__.py
 core/dbclient.py

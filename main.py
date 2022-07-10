@@ -1,7 +1,9 @@
 
 from clientpkgs.IPAccessClient import IPAccessClient
 from clientpkgs.TokensClient import TokensClient
-from core import logging_utils, parser as pars
+from clientpkgs.WorkspaceClient import WorkspaceClient
+from core import  parser as pars
+from core.logging_utils import LoggingUtils
 from core.dbclient import dbclient
 from clientpkgs.ClustersClient import ClustersClient
 from clientpkgs.DbfsClient import DbfsClient
@@ -11,23 +13,27 @@ from clientpkgs.SecretsClient import SecretsClient
 from clientpkgs.AccountsClient import AccountsClient
 from clientpkgs.JobRunsClient import JobRunsClient
 from clientpkgs.PoolsClient import PoolsClient
+from clientpkgs.WSSettingsClient import WSSettingsClient
+from clientpkgs.InitScriptsClient import InitScriptsClient
+from clientpkgs.LibrariesClient import LibrariesClient
 
 import sys, json, requests
 
 # python 3.6
 
 def main():
-    
-    jsonstr = '''{"profile": "", "url":"", "export_db": "logs", "is_azure":"False", "verify_ssl": "False", "verbosity":"debug", 
-    "clusterid":"0225-034621-fyv7t2c","master_name_scope":"masterscp", 
+    ##"account_id": "a2033dd6-73e6-465a-8898-973fbde27970" "clusterid":"0606-201442-d3auaeu4" - db-sme-demo-rkm-mgtz-2
+    ##"account_id": "119f3ee2-8c38-4cdb-88e1-81c091c378a2" "clusterid":"0525-215202-rguwsnht" e2-demo-migrate-src.cloud.databricks.com
+    jsonstr = '''{"profile": "", "url":"", "account_id": "a2033dd6-73e6-465a-8898-973fbde27970", "export_db": "logs", "is_azure":"False", "verify_ssl": "False", "verbosity":"debug", 
+    "clusterid":"0606-201442-d3auaeu4","master_name_scope":"masterscp", 
     "master_name_key":"user", "master_pwd_scope":"masterscp", "master_pwd_key":"pass"}'''
     # define a parser to identify what component to import / export
-    fconfig = pars.parse_dbcfg(profile='rkmtzarsrc')   #e2demofieldeng
+    fconfig = pars.parse_dbcfg(profile='rkmtzar')   #e2demofieldeng rkmtzar  rkmtzarsrc
     # parse the args
     client_config = pars.parse_input_jsonargs(jsonstr, host=fconfig['host'], token=fconfig['token'] )
     
     print(client_config['verbosity'])
-    loggr = logging_utils.get_logger(__name__,client_config['verbosity'])
+    loggr = LoggingUtils.get_logger()
     loggr.debug(client_config)
 
     # print("Test connection at {0} with profile {1}\n".format(url, args.profile))
@@ -40,14 +46,55 @@ def main():
         else:
             loggr.info("Unsuccessful connection. Verify credentials.")
 
-        ipaccessClient = IPAccessClient(client_config)
-        iplist=ipaccessClient.get_ipaccess_list()
-        print(iplist)
 
 
-        tokensClient = TokensClient(client_config)
-        tokensList=tokensClient.get_tokens_list()
+
+        workspaceClient = WorkspaceClient(client_config)
+        # notebookList = workspaceClient.get_all_notebooks()
+        #notebookList = workspaceClient.get_list_notebooks('/Repos/ramdas.murali+tzar@databricks.com/CSE/gold/workspace_analysis/dev')
+        # print(notebookList)
+        # libClient = LibrariesClient(client_config)
+        # libList = libClient.get_libraries_status_list()
+        # print(libList)
+
+        # secretsClient = SecretsClient(client_config)
+        # scopeslist = secretsClient.get_secret_scopes_list()
+
+        # secretslist = secretsClient.get_secrets(scopeslist)
+        # print(secretslist)
+
+        #acctClient = AccountsClient(client_config)
+        #lst = acctClient.get_workspace_list()
+        #lst = acctClient.get_privatelink_info()
+        #print(lst)
+        # initClient = InitScriptsClient(client_config)
+        # scriptsList = initClient.get_allglobalinitscripts_list()
+        # print(scriptsList)
+
+
+
+        # dbfsclient = DbfsClient(client_config)
+        # dirlist = dbfsclient.get_dbfs_directories('/user/hive/warehouse/')
+        # print(dirlist)
+
+        # dbfsmounts = dbfsclient.get_dbfs_mounts()
+        # print(dbfsmounts)
+
+
+
+        wsclient = WSSettingsClient(client_config)
+        tokensList=wsclient.get_wssettings_list()
         print(tokensList)
+
+
+        # ipaccessClient = IPAccessClient(client_config)
+        # iplist=ipaccessClient.get_ipaccess_list()
+        # print(iplist)
+
+
+        # tokensClient = TokensClient(client_config)
+        # tokensList=tokensClient.get_tokens_list()
+        # print(tokensList)
 
 
         # jobrunsClient = JobRunsClient(client_config)
@@ -60,17 +107,18 @@ def main():
 
 
         # acctClient = AccountsClient(client_config)
-        # lst = acctClient.get_workspace_list('a2033dd6-73e6-465a-8898-973fbde27970')
+        # lst = acctClient.get_privatelink_info()
+        # lst = acctClient.get_workspace_list()
         # print(lst)
-        # lst = acctClient.get_credentials_list('a2033dd6-73e6-465a-8898-973fbde27970')
+        # lst = acctClient.get_credentials_list()
         # print(lst)
-        # lst = acctClient.get_network_list('a2033dd6-73e6-465a-8898-973fbde27970')
+        # lst = acctClient.get_network_list()
         # print(lst)
-        # lst = acctClient.get_storage_list('a2033dd6-73e6-465a-8898-973fbde27970')
+        # lst = acctClient.get_storage_list()
         # print(lst)
-        # lst = acctClient.get_cmk_list('a2033dd6-73e6-465a-8898-973fbde27970')
+        # lst = acctClient.get_cmk_list()
         # print(lst)
-        # lst = acctClient.get_logdelivery_list('a2033dd6-73e6-465a-8898-973fbde27970')
+        # lst = acctClient.get_logdelivery_list()
         # print(lst)
 
 

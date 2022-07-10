@@ -1,0 +1,7 @@
+file.log
+**/logs/
+test.py
+**/dist/
+__pycache__
+**/build/
+

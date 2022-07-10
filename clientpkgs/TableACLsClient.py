@@ -1,7 +1,7 @@
 import base64
 import shutil
 import logging
-from core import logging_utils
+from core.logging_utils import LoggingUtils
 from core import wmconstants
 from core.dbclient import dbclient
 

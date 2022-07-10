@@ -2,7 +2,7 @@ import logging
 import os
 import re
 import time
-from core import logging_utils
+from core.logging_utils import LoggingUtils
 from core import wmconstants
 from core.dbclient import dbclient
 

@@ -1,7 +1,8 @@
 
 import configparser
+from distutils.log import Log
 from core import wmconstants
-from core import logging_utils
+from core.logging_utils import LoggingUtils
 import logging
 from os import path
 import json,re
@@ -9,12 +10,11 @@ import json,re
 loggr=None
 
 if loggr == None:
-    loggr = logging_utils.get_logger(__name__)
+    loggr = LoggingUtils.get_logger()
 
 def parse_dbcfg(creds_path='~/.databrickscfg', profile='DEFAULT'):
     config = configparser.ConfigParser()
     abs_creds_path = path.expanduser(creds_path)
-    (abs_creds_path)
     config.read(abs_creds_path)
     try:
         current_profile = dict(config[profile])
@@ -24,7 +24,7 @@ def parse_dbcfg(creds_path='~/.databrickscfg', profile='DEFAULT'):
             'Unable to find credentials to load for profile. Profile only supports tokens.')
 
 #parse args from json string
-# '''{"profile": "", "url":"", "export_db": "logs", "is_azure":"False", "verify_ssl": "False", "verbosity":"debug", 
+# '''{"profile": "", "url":"", "account_id":"119f3ee2-8c38-4cdxxxx", "export_db": "logs", "is_azure":"False", "verify_ssl": "False", "verbosity":"debug", 
 #     "clusterid":"0444-034f21-fayv7e2d","master_name_scope":"masterscp", 
 #     "master_name_key":"user", "master_pwd_scope":"masterscp", "master_pwd_key":"pass"}'''
 def parse_input_jsonargs(jsonargs, host, token):
@@ -32,8 +32,9 @@ def parse_input_jsonargs(jsonargs, host, token):
     args['url']=url_validation(host)
     args['token']=token
     args.update({'verbosity':getLogLevel(args['verbosity'])})
-    args.update({'is_azure':getLogLevel(args['is_azure'])})
-    args.update({'verify_ssl':getLogLevel(args['verify_ssl'])})
+    LoggingUtils.loglevel=args['verbosity'] #update class variable
+    args.update({'is_azure':str2bool(args['is_azure'])})
+    args.update({'verify_ssl':str2bool(args['verify_ssl'])})
     # verify the proper url settings to configure this client
     if ('.com' in args['url']==False) or ('.net' in args['url']==False):
         loggr.info("Verify Hostname. Hostname should contain '.com' or '.net'")
