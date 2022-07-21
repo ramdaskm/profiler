@@ -24,13 +24,15 @@ def parse_dbcfg(creds_path='~/.databrickscfg', profile='DEFAULT'):
             'Unable to find credentials to load for profile. Profile only supports tokens.')
 
 #parse args from json string
-# '''{"profile": "", "url":"", "account_id":"119f3ee2-8c38-4cdxxxx", "export_db": "logs", "is_azure":"False", "verify_ssl": "False", "verbosity":"debug", 
-#     "clusterid":"0444-034f21-fayv7e2d","master_name_scope":"masterscp", 
-#     "master_name_key":"user", "master_pwd_scope":"masterscp", "master_pwd_key":"pass"}'''
+#'''{"profile": "", "url":"", "account_id":"dcdbb945-e659-4e8c-b108-db6b3ac3d0eb", "export_db": "logs", "is_azure":"False", "verify_ssl": "False", "verbosity":"info", 
+#   "clusterid":clusterid,"master_name_scope":"swat_masterscp", 
+#   "master_name_key":"user", "master_pwd_scope":"swat_masterscp", "master_pwd_key":"pass",
+#       "workspace_pat_scope":"swat_masterscp",  "workspace_pat_token":"sat_token" }'''
+
 def parse_input_jsonargs(jsonargs, host, token):
     args =json.loads(jsonargs)
     args['url']=url_validation(host)
-    args['token']=token
+    args['token']=token 
     args.update({'verbosity':getLogLevel(args['verbosity'])})
     LoggingUtils.loglevel=args['verbosity'] #update class variable
     args.update({'is_azure':str2bool(args['is_azure'])})
@@ -64,6 +66,4 @@ def getLogLevel(s):
 
 def str2bool(v):
   return v.lower() in ("yes", "true", "t", "1")
-
-
 

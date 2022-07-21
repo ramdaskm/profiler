@@ -5,6 +5,7 @@ import os
 import requests
 import re
 import time
+import base64
 
 from core.logging_utils import LoggingUtils
 #import requests.packages.urllib3
@@ -49,6 +50,8 @@ class dbclient:
         self._master_password_key=configs['master_pwd_key']
         self._master_name=''
         self._master_password=''
+        self._workspace_pat_scope=configs['workspace_pat_scope']
+        self._workspace_pat_token=configs['workspace_pat_token']
 
         if self._verify_ssl == True:
             pass
@@ -56,38 +59,42 @@ class dbclient:
             #os.environ['REQUESTS_CA_BUNDLE'] = ""
             #os.environ['CURL_CA_BUNDLE'] = ""
 
+    
+        
+
+    def get_secret_value(self, scope_name, secret_key):
+        ec_id = self.get_execution_context()
+        cmd_set_value = f"value = dbutils.secrets.get(scope = '{scope_name}', key = '{secret_key}')"
+        cmd_convert_b64 = "import base64; b64_value = base64.b64encode(value.encode('ascii'))"
+        cmd_get_b64 = "print(str(b64_value.decode('ascii')))"   # b64_value.decode('ascii')
+        results_set = self.submit_command(ec_id, cmd_set_value)
+        results_convert = self.submit_command(ec_id, cmd_convert_b64)
+        results_get = self.submit_command(ec_id, cmd_get_b64)
+        val = results_get.get('data')
+        b64_value_decode = base64.b64decode(val).decode('ascii')
+        return b64_value_decode
 
     def _update_token_master(self):
-        import base64
-        def get_secret_value(scope_name, secret_key):
-            ec_id = self.get_execution_context()
-            cmd_set_value = f"value = dbutils.secrets.get(scope = '{scope_name}', key = '{secret_key}')"
-            cmd_convert_b64 = "import base64; b64_value = base64.b64encode(value.encode('ascii'))"
-            cmd_get_b64 = "print(str(b64_value.decode('ascii')))"   # b64_value.decode('ascii')
-            results_set = self.submit_command(ec_id, cmd_set_value)
-            results_convert = self.submit_command(ec_id, cmd_convert_b64)
-            results_get = self.submit_command(ec_id, cmd_get_b64)
-            val = results_get.get('data')
-            b64_value_decode = base64.b64decode(val).decode('ascii')
-            return b64_value_decode
-
         if(self._master_name==''): #do it first time
             #secretsClient=SecretsClient(self)
-            self._master_name = get_secret_value(self._master_name_scope, self._master_name_key)
-            self._master_password = get_secret_value(self._master_password_scope, self._master_password_key)    
+            self._master_name = self.get_secret_value(self._master_name_scope, self._master_name_key)
+            self._master_password = self.get_secret_value(self._master_password_scope, self._master_password_key)    
         userAndPass = base64.b64encode(f"{self._master_name}:{self._master_password}".encode("ascii")).decode("ascii")
         self._url = "https://accounts.cloud.databricks.com" #url for accounts api
         self._token = {
             'Authorization' : 'Basic {0}'.format(userAndPass),
-            'User-Agent': 'databricks-profiler/0.1.0'
+            'User-Agent': 'databricks-sat/0.1.0'
         }
 
     def _update_token(self):
+        if(self._raw_token==''): #will be set in initializer
+            raise Exception('Token not setup ' + self._workspace_pat_scope + ' - ' + self._workspace_pat_token)
         self._url=self._raw_url #accounts api uses a different url
         self._token = {
             'Authorization': 'Bearer {0}'.format(self._raw_token),
-            'User-Agent': 'databricks-profiler/0.1.0'
+            'User-Agent': 'databricks-sat/0.1.0'
         }
+
 
 
     def test_connection(self, master_acct=False):

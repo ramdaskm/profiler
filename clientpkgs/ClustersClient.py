@@ -87,7 +87,7 @@ class ClustersClient(dbclient):
             return global_scripts
 
     def get_spark_versions(self):
-        return self.get("/clusters/spark-versions")
+        return self.get("/clusters/spark-versions").get('versions', [])
 
     def get_instance_profiles_list(self):
         if self.is_aws():
@@ -115,4 +115,3 @@ class ClustersClient(dbclient):
             return False
 
 
- 

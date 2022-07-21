@@ -24,11 +24,18 @@ import sys, json, requests
 def main():
     ##"account_id": "a2033dd6-73e6-465a-8898-973fbde27970" "clusterid":"0606-201442-d3auaeu4" - db-sme-demo-rkm-mgtz-2
     ##"account_id": "119f3ee2-8c38-4cdb-88e1-81c091c378a2" "clusterid":"0525-215202-rguwsnht" e2-demo-migrate-src.cloud.databricks.com
-    jsonstr = '''{"profile": "", "url":"", "account_id": "a2033dd6-73e6-465a-8898-973fbde27970", "export_db": "logs", "is_azure":"False", "verify_ssl": "False", "verbosity":"debug", 
-    "clusterid":"0606-201442-d3auaeu4","master_name_scope":"masterscp", 
-    "master_name_key":"user", "master_pwd_scope":"masterscp", "master_pwd_key":"pass"}'''
+    # jsonstr = '''{"profile": "", "url":"", "account_id": "a2033dd6-73e6-465a-8898-973fbde27970", "export_db": "logs", "is_azure":"False", "verify_ssl": "False", "verbosity":"debug", 
+    # "clusterid":"0606-201442-d3auaeu4","master_name_scope":"masterscp", 
+    # "master_name_key":"user", "master_pwd_scope":"masterscp", "master_pwd_key":"pass"}'''
+    
+    
+    jsonstr = '''{"profile": "", "url":"", "account_id":"dcdbb945-e659-4e8c-b108-db6b3ac3d0eb", "export_db": "logs", "is_azure":"False", "verify_ssl": "False", "verbosity":"info", 
+  "clusterid":"0720-140418-zufw1e6x","master_name_scope":"swat_masterscp", 
+  "master_name_key":"user", "master_pwd_scope":"swat_masterscp", "master_pwd_key":"pass",
+      "workspace_pat_scope":"swat_masterscp",  "workspace_pat_token":"sat_token" }'''
+
     # define a parser to identify what component to import / export
-    fconfig = pars.parse_dbcfg(profile='rkmtzar')   #e2demofieldeng rkmtzar  rkmtzarsrc
+    fconfig = pars.parse_dbcfg(profile='sfe')   #e2demofieldeng rkmtzar  rkmtzarsrc sfe
     # parse the args
     client_config = pars.parse_input_jsonargs(jsonstr, host=fconfig['host'], token=fconfig['token'] )
     
@@ -82,9 +89,9 @@ def main():
 
 
 
-        wsclient = WSSettingsClient(client_config)
-        tokensList=wsclient.get_wssettings_list()
-        print(tokensList)
+        # wsclient = WSSettingsClient(client_config)
+        # tokensList=wsclient.get_wssettings_list()
+        # print(tokensList)
 
 
         # ipaccessClient = IPAccessClient(client_config)
@@ -123,8 +130,9 @@ def main():
 
 
 
-        # clusterClient = ClustersClient(client_config)
-        # clusterLst = clusterClient.get_cluster_list(alive=False)
+        clusterClient = ClustersClient(client_config)
+        clusterLst = clusterClient.get_cluster_list(alive=False)
+        print(clusterLst)
         # clusterLst2 = clusterClient.get_cluster_acls("0121-204226-yq5nnyt7", '')
         # clusterLst3 = clusterClient.get_cluster_id_by_name('rkmjdbc')
         # clusterLst4 = clusterClient.get_global_init_scripts()
